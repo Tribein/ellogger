@@ -11,8 +11,9 @@ import (
 )
 
 type LogRecord struct {
-	AppName string `json:"app_name"`
+	AppName string `json:"appname"`
 	MyID    string `json:"hostname"`
+	LineId  uint32 `json:"lineid"`
 	Data    string `json:"message"`
 }
 
@@ -45,6 +46,7 @@ func sendData(conn net.Conn, input *LogRecord) {
 }
 */
 func main() {
+	var lineid uint32 = 0
 	logRec := &LogRecord{
 		AppName: os.Args[2],
 		MyID:    os.Args[1],
@@ -52,9 +54,14 @@ func main() {
 	scanner := bufio.NewScanner(os.Stdin)
 	for scanner.Scan() {
 		if v := strings.TrimSpace(scanner.Text()); len(v) > 0 {
+			lineid++
+			logRec.LineId = lineid
 			logRec.Data = v
 			logRecJSON, _ := json.Marshal(logRec)
 			fmt.Println(string(logRecJSON))
+			if lineid > 4294967293 {
+				lineid = 0
+			}
 		}
 	}
 
